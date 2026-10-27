@@ -1,5 +1,8 @@
 const MODULE_NAME = 'SillyTavern-CSSInspector';
-const extPath = 'scripts/extensions/third-party/' + MODULE_NAME;
+const extPaths = [
+    'scripts/extensions/third-party/sillytavern-cssinspector',
+    'scripts/extensions/third-party/SillyTavern-CSSInspector',
+]; // Support lowercase fork name and upstream name
 
 jQuery(async function () {
     try {
@@ -78,7 +81,7 @@ jQuery(async function () {
         const tooltip = $('<div id="css_inspector_tooltip"></div>');
         $('body').append(tooltip);
 
-        const fab = $('<div id="css_inspector_fab" title="CSS Inspector"><i class="fa-solid fa-crosshairs"></i></div>');
+        const fab = $('<div id="css_inspector_fab" title="CSS 元素检查器"><i class="fa-solid fa-crosshairs"></i></div>');
         $('body').append(fab);
 
         // --- Box model overlays ---
@@ -243,7 +246,7 @@ jQuery(async function () {
                 }
             }
             if (getSettings().showToasts && typeof toastr !== 'undefined') {
-                toastr.info(count + ' elements with .' + cn, MODULE_NAME);
+                toastr.info(count + ' 个元素含有类名 .' + cn, 'CSS 元素检查器');
             }
         }
 
@@ -391,7 +394,7 @@ jQuery(async function () {
             if (cls.length) {
                 h += '<div class="csi-row"><i class="fa-solid fa-layer-group csi-icon"></i><div class="csi-classes">' + cls.join('<br>') + '</div></div>';
             } else {
-                h += '<div class="csi-row csi-dim"><i class="fa-solid fa-layer-group csi-icon"></i> no classes</div>';
+                h += '<div class="csi-row csi-dim"><i class="fa-solid fa-layer-group csi-icon"></i> 无类名</div>';
             }
 
             if (s.showDimensions) {
@@ -401,40 +404,40 @@ jQuery(async function () {
 
             if (s.showComputed) {
                 const cs = getComputedStyle(el);
-                h += '<div class="csi-row csi-dim"><i class="fa-solid fa-palette csi-icon"></i> color: ' + escapeHtml(cs.color) + '</div>';
+                h += '<div class="csi-row csi-dim"><i class="fa-solid fa-palette csi-icon"></i> 颜色：' + escapeHtml(cs.color) + '</div>';
                 h += '<div class="csi-row csi-dim"><i class="fa-solid fa-font csi-icon"></i> ' + escapeHtml(cs.fontFamily.split(',')[0]) + ' / ' + escapeHtml(cs.fontSize) + '</div>';
                 if (cs.backgroundColor !== 'rgba(0, 0, 0, 0)') {
-                    h += '<div class="csi-row csi-dim"><i class="fa-solid fa-fill-drip csi-icon"></i> bg: ' + escapeHtml(cs.backgroundColor) + '</div>';
+                    h += '<div class="csi-row csi-dim"><i class="fa-solid fa-fill-drip csi-icon"></i> 背景：' + escapeHtml(cs.backgroundColor) + '</div>';
                 }
             }
 
             if (s.showBoxModel) {
                 const bcs = getComputedStyle(el);
-                h += '<div class="csi-boxmodel-title"><i class="fa-solid fa-vector-square"></i> Box Model</div>';
-                h += '<div class="csi-box-row"><span class="csi-box-label-margin">margin: ' + escapeHtml(bcs.margin) + '</span></div>';
-                h += '<div class="csi-box-row"><span class="csi-box-label-padding">padding: ' + escapeHtml(bcs.padding) + '</span></div>';
-                h += '<div class="csi-box-row"><span class="csi-box-label-border">border: ' + escapeHtml(bcs.borderWidth) + '</span></div>';
+                h += '<div class="csi-boxmodel-title"><i class="fa-solid fa-vector-square"></i> 盒模型</div>';
+                h += '<div class="csi-box-row"><span class="csi-box-label-margin">外边距：' + escapeHtml(bcs.margin) + '</span></div>';
+                h += '<div class="csi-box-row"><span class="csi-box-label-padding">内边距：' + escapeHtml(bcs.padding) + '</span></div>';
+                h += '<div class="csi-box-row"><span class="csi-box-label-border">边框：' + escapeHtml(bcs.borderWidth) + '</span></div>';
             }
 
             if (s.showVariables) {
                 const vars = extractCssVariables(el);
                 const vk = Object.keys(vars);
                 if (vk.length) {
-                    h += '<div class="csi-vars-title"><i class="fa-solid fa-wand-magic-sparkles"></i> CSS Variables</div>';
+                    h += '<div class="csi-vars-title"><i class="fa-solid fa-wand-magic-sparkles"></i> CSS 变量</div>';
                     vk.forEach(function (k) {
-                        h += '<div class="csi-var-row"><span class="csi-var-prop">' + escapeHtml(vars[k].property) + '</span> <span class="csi-var-name">' + escapeHtml(k) + '</span> <span class="csi-var-value">' + escapeHtml(vars[k].resolved) + '</span></div>';
+                        h += '<div class="csi-var-row"><span class="csi-var-prop">' + escapeHtml(vars[k].property) + '</span> <span class="csi-var-name">' + escapeHtml(k) + '</span> <span class="csi-var-value">' + escapeHtml(vars[k].resolved === '(unset)' ? '（未设置）' : vars[k].resolved) + '</span></div>';
                     });
                 }
             }
 
-            const ml = { full: 'tag#id.class', classes: '.class only', id: '#id only', path: 'DOM path', css: 'CSS rule block' };
-            const hint = isTouchDevice ? 'tap again to copy' : 'click to copy';
+            const ml = { full: '标签#ID.类名', classes: '仅 .类名', id: '仅 #ID', path: 'DOM 路径', css: 'CSS 规则代码' };
+            const hint = isTouchDevice ? '再次点击即可复制' : '点击即可复制';
             h += '<div class="csi-hint"><i class="fa-solid fa-copy"></i> ' + hint + ' (' + escapeHtml(ml[s.copyMode] || s.copyMode) + ')</div>';
             if (!isTouchDevice) {
-                h += '<div class="csi-hint csi-hint-sub"><i class="fa-solid fa-up-down-left-right"></i> arrow keys: navigate DOM tree</div>';
+                h += '<div class="csi-hint csi-hint-sub"><i class="fa-solid fa-up-down-left-right"></i> 方向键：在 DOM 元素树中导航</div>';
             }
             if (s.showBreadcrumbs && breadcrumbMap.length > 1) {
-                h += '<div class="csi-hint csi-hint-sub"><i class="fa-solid fa-arrow-up"></i> ' + (isPinned ? 'click breadcrumb to navigate' : 'pin first to use breadcrumbs') + '</div>';
+                h += '<div class="csi-hint csi-hint-sub"><i class="fa-solid fa-arrow-up"></i> ' + (isPinned ? '点击层级导航切换元素' : '先固定提示框再使用层级导航') + '</div>';
             }
             return h;
         }
@@ -556,7 +559,7 @@ jQuery(async function () {
                         if (legacyCopy(text)) resolve(); else reject(err);
                     });
                 } else {
-                    if (legacyCopy(text)) resolve(); else reject(new Error('Clipboard API unavailable'));
+                    if (legacyCopy(text)) resolve(); else reject(new Error('剪贴板接口不可用'));
                 }
             });
         }
@@ -583,12 +586,12 @@ jQuery(async function () {
             const txt = buildCopyText(el);
             copyToClipboard(txt).then(function () {
                 if (getSettings().showToasts && typeof toastr !== 'undefined') {
-                    toastr.success('Copied: ' + txt, MODULE_NAME);
+                    toastr.success('已复制：' + txt, 'CSS 元素检查器');
                 }
             }).catch(function (err) {
                 console.warn('[CSS Inspector] Copy failed:', err);
                 if (getSettings().showToasts && typeof toastr !== 'undefined') {
-                    toastr.error('Copy failed: ' + (err && err.message ? err.message : 'unknown'), MODULE_NAME);
+                    toastr.error('复制失败：' + (err && err.message ? err.message : '未知错误'), 'CSS 元素检查器');
                 }
             });
         }
@@ -889,7 +892,7 @@ jQuery(async function () {
 
         // Pretty-print key names (Bug #15/#16)
         const KEY_DISPLAY_MAP = {
-            ' ': 'Space',
+            ' ': '空格',
             'arrowup': '↑',
             'arrowdown': '↓',
             'arrowleft': '←',
@@ -920,7 +923,7 @@ jQuery(async function () {
         }
 
         function formatHotkey(hk) {
-            if (!hk || !hk.key) return '(none)';
+            if (!hk || !hk.key) return '（未设置）';
             const parts = [];
             if (hk.ctrl) parts.push('Ctrl');
             if (hk.shift) parts.push('Shift');
@@ -941,7 +944,7 @@ jQuery(async function () {
                 e.stopPropagation();
                 setInspectorActive(!inspectorActive);
                 if (s.showToasts && typeof toastr !== 'undefined') {
-                    toastr.info(inspectorActive ? 'Inspector: ON' : 'Inspector: OFF', MODULE_NAME, { timeOut: 1000 });
+                    toastr.info(inspectorActive ? '检查器：已开启' : '检查器：已关闭', 'CSS 元素检查器', { timeOut: 1000 });
                 }
                 return;
             }
@@ -1068,7 +1071,10 @@ jQuery(async function () {
         if (earlyS.enabled) showFab(); else hideFab();
 
         let settingsHtml;
-        try { settingsHtml = await $.get(extPath + '/settings.html'); } catch (e) { settingsHtml = ''; }
+        for (const folder of extPaths) {
+            try { settingsHtml = await $.get(folder + '/settings.html'); break; }
+            catch (e) { /* Try the next install folder */ }
+        }
 
         if (settingsHtml) {
             const rp = $('#extensions_settings2');
@@ -1123,7 +1129,7 @@ jQuery(async function () {
 
         $hkInput.on('focus' + NS, function () {
             hotkeyCapturing = true;
-            $hkInput.val('Press keys...').addClass('csi-hotkey-capturing');
+            $hkInput.val('请按下快捷键…').addClass('csi-hotkey-capturing');
         });
         $hkInput.on('blur' + NS, function () {
             hotkeyCapturing = false;
@@ -1230,7 +1236,8 @@ jQuery(async function () {
     } catch (error) {
         console.error('[CSS Inspector] CRASH:', error);
         if (typeof toastr !== 'undefined') {
-            toastr.error('CRASH: ' + (error && error.message ? error.message : String(error)), 'CSS Inspector');
+            toastr.error('插件异常：' + (error && error.message ? error.message : String(error)), 'CSS 元素检查器');
         }
     }
 });
+
