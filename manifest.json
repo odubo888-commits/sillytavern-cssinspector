@@ -1,5 +1,5 @@
 {
-    "display_name": "CSS Class Inspector",
+    "display_name": "CSS 元素检查器（简体中文）",
     "loading_order": 100,
     "requires": [],
     "optional": [],
@@ -7,6 +7,6 @@
     "css": "style.css",
     "author": "Nufahi",
     "version": "1.2.0",
-    "homePage": "https://github.com/Nufahi/SillyTavern-CSSInspector",
+    "homePage": "https://github.com/odubo888-commits/sillytavern-cssinspector",
     "auto_update": true
 }
